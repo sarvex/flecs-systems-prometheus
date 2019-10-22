@@ -1,9 +1,9 @@
 #include <flecs_systems_prometheus.h>
 
 typedef struct PromWorldCounters {
-    double frame_total;
-    double system_total;
-    double merge_total;
+    double frame_time_total;
+    double system_time_total;
+    double merge_time_total;
 } PromWorldCounters;
 
 typedef struct PromSystemCounters {
