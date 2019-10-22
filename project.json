@@ -1,0 +1,14 @@
+{
+    "id": "flecs.systems.prometheus",
+    "type": "package",
+    "value": {
+        "author": "Sander Mertens",
+        "description": "Prometheus exporter endpoint",
+        "use": [
+            "flecs",
+            "flecs.components.http",
+            "flecs.systems.civetweb",
+            "flecs.util"
+        ]
+    }
+}
