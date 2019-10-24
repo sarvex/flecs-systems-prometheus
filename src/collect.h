@@ -8,7 +8,6 @@ typedef struct PromWorldCounters {
 
 typedef struct PromSystemCounters {
     double time_spent;
-    double ticks;
 } PromSystemCounters;
 
 typedef struct PrometheusCollect {

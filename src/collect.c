@@ -36,10 +36,6 @@ void PromSystemCountersCollect(ecs_rows_t *rows) {
     uint32_t i;
     for (i = 0; i < rows->count; i ++) {
         counters[i].time_spent += stats[i].time_spent;
-
-        if (stats->enabled && stats->active) {
-            counters->ticks ++;
-        }
     }
 }
 

@@ -241,7 +241,6 @@ void PromHttpReplySystemTimeSpent(ecs_rows_t *rows) {
 static
 void PromHttpReplySystemTicks(ecs_rows_t *rows) {
     ECS_COLUMN(rows, EcsSystemStats, stats, 1);
-    ECS_COLUMN(rows, PromSystemCounters, counters, 2);
 
     ecs_strbuf_t *reply = rows->param;
 
@@ -254,7 +253,7 @@ void PromHttpReplySystemTicks(ecs_rows_t *rows) {
     uint32_t i;
     for (i = 0; i < rows->count; i ++) {
         system_metric_header(reply, "flecs_system_ticks_total", &stats[i]);
-        ecs_strbuf_append(reply, "%f\n", counters[i].ticks);
+        ecs_strbuf_append(reply, "%u\n", stats[i].invoke_count);
     }
 }
 
@@ -471,6 +470,245 @@ void PromHttpReplyCompMemoryAllocd(ecs_rows_t *rows) {
     }
 }
 
+/* -- Table metrics -- */
+
+static
+void table_metric_header(
+    ecs_world_t *world,
+    ecs_strbuf_t *reply,
+    const char *metric_name,
+    EcsTableStats *stats)
+{
+    char *type_expr = ecs_type_to_expr(world, stats->type);
+
+    ecs_strbuf_append(reply, "%s {type=\"%s\"} ", metric_name, type_expr);
+
+    free(type_expr);
+}
+
+static
+void PromHttpReplyTableColumnCount(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTableStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_table_column_count Number of columns in table\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_table_column_count gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        table_metric_header(world, reply, "flecs_table_column_count", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].column_count);
+    }
+}
+
+static
+void PromHttpReplyTableEntityCount(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTableStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_table_entity_count Number of entities (rows) in table\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_table_entity_count gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        table_metric_header(world, reply, "flecs_table_entity_count", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].entity_count);
+    }
+}
+
+static
+void PromHttpReplyTableSystemMatchedCount(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTableStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_table_systems_matched_count Number of systems matched with table\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_table_systems_matched_count gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        table_metric_header(world, reply, "flecs_table_systems_matched_count", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].systems_matched);
+    }
+}
+
+static
+void PromHttpReplyTableDataMemoryAllocd(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTableStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_table_data_memory_allocd Memory allocated for entity data\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_table_data_memory_allocd gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        table_metric_header(world, reply, "flecs_table_data_memory_allocd", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].data_memory.allocd);
+    }
+}
+
+static
+void PromHttpReplyTableDataMemoryUsed(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTableStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_table_data_memory_used Memory used for entity data\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_table_data_memory_used gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        table_metric_header(world, reply, "flecs_table_data_memory_used", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].data_memory.used);
+    }
+}
+
+static
+void PromHttpReplyTableOtherMemory(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTableStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_table_other_memory Memory used for other table data\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_table_other_memory gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        table_metric_header(world, reply, "flecs_table_other_memory", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].other_memory);
+    }
+}
+
+/* -- Type metrics -- */
+
+static
+void type_metric_header(
+    ecs_world_t *world,
+    ecs_strbuf_t *reply,
+    const char *metric_name,
+    EcsTypeStats *stats)
+{
+    char *type_expr = ecs_type_to_expr(world, stats->type);
+
+    ecs_strbuf_append(reply, "%s {id=\"%s\",type=\"%s\",hidden=\"%s\"} ", 
+        metric_name, stats->id, type_expr, stats->is_hidden ? "true" : "false");
+
+    free(type_expr);
+}
+
+static
+void type_entity_metric_header(
+    ecs_world_t *world,
+    ecs_strbuf_t *reply,
+    const char *metric_name,
+    const char *kind,
+    EcsTypeStats *stats)
+{
+    char *type_expr = ecs_type_to_expr(world, stats->type);
+
+    ecs_strbuf_append(reply, "%s {id=\"%s\",type=\"%s\",kind=\"%s\",hidden=\"%s\"} ", 
+        metric_name, stats->id, type_expr, kind, stats->is_hidden ? "true" : "false");
+
+    free(type_expr);
+}
+
+static
+void PromHttpReplyTypeEntityCount(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTypeStats, stats, 1);
+
+    ecs_strbuf_t *reply = rows->param;    
+    ecs_world_t *world = rows->world;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_type_entity_count Number of entities in type\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_type_entity_count gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        type_entity_metric_header(world, reply, "flecs_type_entity_count", "", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].entity_count);
+        type_entity_metric_header(world, reply, "flecs_type_entity_count", "childof", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].entity_childof_count);
+        type_entity_metric_header(world, reply, "flecs_type_entity_count", "instanceof", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].entity_instanceof_count);
+        type_entity_metric_header(world, reply, "flecs_type_entity_count", "component", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].component_count);
+        type_entity_metric_header(world, reply, "flecs_type_entity_count", "column_system", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].col_system_count);
+        type_entity_metric_header(world, reply, "flecs_type_entity_count", "row_system", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].row_system_count);        
+    }    
+}
+
+static
+void PromHttpReplyTypeEnabledSystemCount(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTypeStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_type_enabled_system_count Number of enabled systems in type\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_type_enabled_system_count gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        type_metric_header(world, reply, "flecs_type_enabled_system_count", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].enabled_system_count);
+    }
+}
+
+static
+void PromHttpReplyTypeActiveSystemCount(ecs_rows_t *rows) {
+    ECS_COLUMN(rows, EcsTypeStats, stats, 1); 
+
+    ecs_world_t *world = rows->world;
+    ecs_strbuf_t *reply = rows->param;
+
+    /* Write headers once per reply */
+    if (rows->table_offset == 0) {
+        ecs_strbuf_appendstr(reply, "#HELP flecs_type_active_system_count Number of active systems in type\n");
+        ecs_strbuf_appendstr(reply, "#TYPE flecs_type_active_system_count gauge\n");
+    }
+
+    uint32_t i;
+    for (i = 0; i < rows->count; i ++) {
+        type_metric_header(world, reply, "flecs_type_active_system_count", &stats[i]);
+        ecs_strbuf_append(reply, "%u\n", stats[i].active_system_count);
+    }
+}
+
 static
 void PromHttpReply(ecs_rows_t *rows) {
     ECS_COLUMN_ENTITY(rows, PromHttpReplyAllocCount, 1);
@@ -497,55 +735,89 @@ void PromHttpReply(ecs_rows_t *rows) {
     ECS_COLUMN_ENTITY(rows, PromHttpReplyCompMemoryUsed, 18);
     ECS_COLUMN_ENTITY(rows, PromHttpReplyCompMemoryAllocd, 19);
 
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTableColumnCount, 20);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTableEntityCount, 21);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTableSystemMatchedCount, 22);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTableDataMemoryAllocd, 23);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTableDataMemoryUsed, 24);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTableOtherMemory, 25);
+
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTypeEntityCount, 26);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTypeEnabledSystemCount, 27);
+    ECS_COLUMN_ENTITY(rows, PromHttpReplyTypeActiveSystemCount, 28);
+
     ecs_strbuf_t *reply = rows->param;
+    ecs_world_t *world = rows->world;
 
     /* Add allocation statistics */
-    ecs_run(rows->world, PromHttpReplyAllocCount, 0, reply);
+    ecs_run(world, PromHttpReplyAllocCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
 
     /* Add world statistics */
-    ecs_run(rows->world, PromHttpReplyWorldTableCount, 0, reply);
+    ecs_run(world, PromHttpReplyWorldTableCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldComponentCount, 0, reply);
+    ecs_run(world, PromHttpReplyWorldComponentCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldEntityCount, 0, reply);
+    ecs_run(world, PromHttpReplyWorldEntityCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldThreadCount, 0, reply);
+    ecs_run(world, PromHttpReplyWorldThreadCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldTickCount, 0, reply);
+    ecs_run(world, PromHttpReplyWorldTickCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldTimeTotal, 0, reply);
+    ecs_run(world, PromHttpReplyWorldTimeTotal, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldTime, 0, reply);
+    ecs_run(world, PromHttpReplyWorldTime, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyWorldTargetFps, 0, reply);
+    ecs_run(world, PromHttpReplyWorldTargetFps, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
 
     /* Add system statistics */
-    ecs_run(rows->world, PromHttpReplySystemTimeSpent, 0, reply);
+    ecs_run(world, PromHttpReplySystemTimeSpent, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplySystemTicks, 0, reply);
+    ecs_run(world, PromHttpReplySystemTicks, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplySystemEntitiesMatched, 0, reply);
+    ecs_run(world, PromHttpReplySystemEntitiesMatched, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplySystemTablesMatched, 0, reply);
+    ecs_run(world, PromHttpReplySystemTablesMatched, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
 
     /* Add system memory statistics */
-    ecs_run(rows->world, PromHttpReplySystemMemoryUsed, 0, reply);
+    ecs_run(world, PromHttpReplySystemMemoryUsed, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplySystemMemoryAllocd, 0, reply);
+    ecs_run(world, PromHttpReplySystemMemoryAllocd, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
 
     /* Add component statistics */
-    ecs_run(rows->world, PromHttpReplyCompTableCount, 0, reply);
+    ecs_run(world, PromHttpReplyCompTableCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyCompEntityCount, 0, reply);
+    ecs_run(world, PromHttpReplyCompEntityCount, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyCompMemoryUsed, 0, reply);
+    ecs_run(world, PromHttpReplyCompMemoryUsed, 0, reply);
     ecs_strbuf_appendstr(reply, "\n");
-    ecs_run(rows->world, PromHttpReplyCompMemoryAllocd, 0, reply);
-    ecs_strbuf_appendstr(reply, "\n");        
+    ecs_run(world, PromHttpReplyCompMemoryAllocd, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");     
+
+    /* Add table statistics */
+    ecs_run(world, PromHttpReplyTableColumnCount, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n"); 
+    ecs_run(world, PromHttpReplyTableEntityCount, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n"); 
+    ecs_run(world, PromHttpReplyTableSystemMatchedCount, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");      
+    ecs_run(world, PromHttpReplyTableDataMemoryAllocd, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");
+    ecs_run(world, PromHttpReplyTableDataMemoryUsed, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");
+    ecs_run(world, PromHttpReplyTableOtherMemory, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");
+
+    /* Add type statistics */
+    ecs_run(world, PromHttpReplyTypeEntityCount, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");
+    ecs_run(world, PromHttpReplyTypeEnabledSystemCount, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");
+    ecs_run(world, PromHttpReplyTypeActiveSystemCount, 0, reply);
+    ecs_strbuf_appendstr(reply, "\n");    
 }
 
 void PrometheusHttpImport(
@@ -572,13 +844,13 @@ void PrometheusHttpImport(
     /* -- System metrics -- */
 
     ECS_SYSTEM(world, PromHttpReplySystemTimeSpent,       EcsManual, [in] EcsSystemStats, PromSystemCounters);
-    ECS_SYSTEM(world, PromHttpReplySystemTicks,           EcsManual, [in] EcsSystemStats, PromSystemCounters);
+    ECS_SYSTEM(world, PromHttpReplySystemTicks,           EcsManual, [in] EcsSystemStats);
     ECS_SYSTEM(world, PromHttpReplySystemEntitiesMatched, EcsManual, [in] EcsSystemStats);    
     ECS_SYSTEM(world, PromHttpReplySystemTablesMatched,   EcsManual, [in] EcsSystemStats);
 
     /* -- System memory metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplySystemMemoryUsed,  EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats);
+    ECS_SYSTEM(world, PromHttpReplySystemMemoryUsed,   EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats);
     ECS_SYSTEM(world, PromHttpReplySystemMemoryAllocd, EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats);
     
     /* -- Component metrics -- */
@@ -587,6 +859,21 @@ void PrometheusHttpImport(
     ECS_SYSTEM(world, PromHttpReplyCompEntityCount,  EcsManual, [in] EcsComponentStats);
     ECS_SYSTEM(world, PromHttpReplyCompMemoryUsed,   EcsManual, [in] EcsComponentStats);
     ECS_SYSTEM(world, PromHttpReplyCompMemoryAllocd, EcsManual, [in] EcsComponentStats);
+
+    /* -- Table metrics -- */
+
+    ECS_SYSTEM(world, PromHttpReplyTableColumnCount,        EcsManual, [in] EcsTableStats);
+    ECS_SYSTEM(world, PromHttpReplyTableEntityCount,        EcsManual, [in] EcsTableStats);
+    ECS_SYSTEM(world, PromHttpReplyTableSystemMatchedCount, EcsManual, [in] EcsTableStats);
+    ECS_SYSTEM(world, PromHttpReplyTableDataMemoryUsed,     EcsManual, [in] EcsTableStats);
+    ECS_SYSTEM(world, PromHttpReplyTableDataMemoryAllocd,   EcsManual, [in] EcsTableStats);
+    ECS_SYSTEM(world, PromHttpReplyTableOtherMemory,        EcsManual, [in] EcsTableStats);
+
+    /* -- Type metrics -- */
+
+    ECS_SYSTEM(world, PromHttpReplyTypeEntityCount,           EcsManual, [in] EcsTypeStats);
+    ECS_SYSTEM(world, PromHttpReplyTypeEnabledSystemCount,    EcsManual, [in] EcsTypeStats);
+    ECS_SYSTEM(world, PromHttpReplyTypeActiveSystemCount,     EcsManual, [in] EcsTypeStats);
 
     /* -- Construct HTTP reply for Prometheus scrape -- */
 
@@ -613,7 +900,18 @@ void PrometheusHttpImport(
         .PromHttpReplyCompTableCount,
         .PromHttpReplyCompEntityCount,
         .PromHttpReplyCompMemoryUsed,
-        .PromHttpReplyCompMemoryAllocd);
+        .PromHttpReplyCompMemoryAllocd,
+        
+        .PromHttpReplyTableColumnCount,
+        .PromHttpReplyTableEntityCount,
+        .PromHttpReplyTableSystemMatchedCount,
+        .PromHttpReplyTableDataMemoryUsed,
+        .PromHttpReplyTableDataMemoryAllocd,
+        .PromHttpReplyTableOtherMemory,
+        
+        .PromHttpReplyTypeEntityCount,
+        .PromHttpReplyTypeEnabledSystemCount,
+        .PromHttpReplyTypeActiveSystemCount);
 
     ECS_EXPORT_ENTITY(PromHttpReply);
 }
