@@ -1,5 +1,4 @@
 #include <flecs_systems_prometheus.h>
-#include "collect.h"
 #include "http.h"
 
 typedef struct http_metrics_t {
@@ -69,7 +68,6 @@ void FlecsSystemsPrometheusImport(
     ECS_IMPORT(world, FlecsComponentsHttp, 0);
 
     /* Private imports */
-    ECS_IMPORT(world, PrometheusCollect, 0);
     ECS_IMPORT(world, PrometheusHttp, 0);
 
     /* Self */
