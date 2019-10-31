@@ -656,7 +656,7 @@ void type_metric_header(
     char *type_expr = ecs_type_to_expr(world, stats->type);
 
     ecs_strbuf_append(reply, "%s {id=\"%s\",type=\"%s\",hidden=\"%s\"} ", 
-        metric_name, stats->id, type_expr, stats->is_hidden ? "true" : "false");
+        metric_name, stats->name, type_expr, stats->is_hidden ? "true" : "false");
 
     free(type_expr);
 }
@@ -672,7 +672,7 @@ void type_entity_metric_header(
     char *type_expr = ecs_type_to_expr(world, stats->type);
 
     ecs_strbuf_append(reply, "%s {id=\"%s\",type=\"%s\",kind=\"%s\",hidden=\"%s\"} ", 
-        metric_name, stats->id, type_expr, kind, stats->is_hidden ? "true" : "false");
+        metric_name, stats->name, type_expr, kind, stats->is_hidden ? "true" : "false");
 
     free(type_expr);
 }
