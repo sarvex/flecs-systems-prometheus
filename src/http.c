@@ -112,7 +112,7 @@ void PromHttpReplyWorldThreadCount(ecs_rows_t *rows)
     }
 
     world_metric_header(reply, "flecs_world_thread_count");
-    ecs_strbuf_append(reply, "%u\n", stats->threads_count);
+    ecs_strbuf_append(reply, "%u\n", stats->threads_count ? stats->threads_count : 1);
 }
 
 static
@@ -211,10 +211,11 @@ void system_metric_header(
     const char *metric_name,
     EcsSystemStats *stats)
 {
-    ecs_strbuf_append(reply, "%s {system=\"%s\",phase=\"%s\",enabled=\"%s\",active=\"%s\"} ",
+    ecs_strbuf_append(reply, "%s {system=\"%s\",phase=\"%s\",enabled=\"%s\",active=\"%s\", hidden=\"%s\"} ",
         metric_name, stats->name, system_kind_str(stats->kind),
         stats->is_enabled ? "true" : "false",
-        stats->is_active ? "true" : "false");
+        stats->is_active ? "true" : "false",
+        stats->is_hidden ? "true" : "false");
 }
 
 static
@@ -872,54 +873,54 @@ void PrometheusHttpImport(
 
     /* -- Allocation metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplyAllocCount,         EcsManual, [in] EcsAllocStats);
+    ECS_SYSTEM(world, PromHttpReplyAllocCount,         EcsManual, [in] EcsAllocStats, SYSTEM.EcsHidden);
 
     /* -- World metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplyWorldTableCount,     EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldComponentCount, EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldEntityCount,    EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldThreadCount,    EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldTickCount,      EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldTimeTotal,      EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldTime,           EcsManual, [in] EcsWorldStats);
-    ECS_SYSTEM(world, PromHttpReplyWorldTargetFps,      EcsManual, [in] EcsWorldStats);
+    ECS_SYSTEM(world, PromHttpReplyWorldTableCount,     EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldComponentCount, EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldEntityCount,    EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldThreadCount,    EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldTickCount,      EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldTimeTotal,      EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldTime,           EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyWorldTargetFps,      EcsManual, [in] EcsWorldStats, SYSTEM.EcsHidden);
 
     /* -- System metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplySystemTimeSpent,       EcsManual, [in] EcsSystemStats);
-    ECS_SYSTEM(world, PromHttpReplySystemTicks,           EcsManual, [in] EcsSystemStats);
-    ECS_SYSTEM(world, PromHttpReplySystemEntitiesMatched, EcsManual, [in] EcsSystemStats);    
-    ECS_SYSTEM(world, PromHttpReplySystemTablesMatched,   EcsManual, [in] EcsSystemStats);
+    ECS_SYSTEM(world, PromHttpReplySystemTimeSpent,       EcsManual, [in] EcsSystemStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplySystemTicks,           EcsManual, [in] EcsSystemStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplySystemEntitiesMatched, EcsManual, [in] EcsSystemStats, SYSTEM.EcsHidden);    
+    ECS_SYSTEM(world, PromHttpReplySystemTablesMatched,   EcsManual, [in] EcsSystemStats, SYSTEM.EcsHidden);
 
     /* -- System memory metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplySystemMemoryUsed,   EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats);
-    ECS_SYSTEM(world, PromHttpReplySystemMemoryAllocd, EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats);
+    ECS_SYSTEM(world, PromHttpReplySystemMemoryUsed,   EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplySystemMemoryAllocd, EcsManual, [in] EcsSystemStats, [in] EcsColSystemMemoryStats, SYSTEM.EcsHidden);
     
     /* -- Component metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplyCompTableCount,   EcsManual, [in] EcsComponentStats);
-    ECS_SYSTEM(world, PromHttpReplyCompEntityCount,  EcsManual, [in] EcsComponentStats);
-    ECS_SYSTEM(world, PromHttpReplyCompMemoryUsed,   EcsManual, [in] EcsComponentStats);
-    ECS_SYSTEM(world, PromHttpReplyCompMemoryAllocd, EcsManual, [in] EcsComponentStats);
+    ECS_SYSTEM(world, PromHttpReplyCompTableCount,   EcsManual, [in] EcsComponentStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyCompEntityCount,  EcsManual, [in] EcsComponentStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyCompMemoryUsed,   EcsManual, [in] EcsComponentStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyCompMemoryAllocd, EcsManual, [in] EcsComponentStats, SYSTEM.EcsHidden);
 
     /* -- Table metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplyTableColumnCount,           EcsManual, [in] EcsTableStats);
-    ECS_SYSTEM(world, PromHttpReplyTableEntityCount,           EcsManual, [in] EcsTableStats);
-    ECS_SYSTEM(world, PromHttpReplyTableSystemMatchedCount,    EcsManual, [in] EcsTableStats);
-    ECS_SYSTEM(world, PromHttpReplyTableComponentMemoryUsed,   EcsManual, [in] EcsTableStats);
-    ECS_SYSTEM(world, PromHttpReplyTableComponentMemoryAllocd, EcsManual, [in] EcsTableStats);
-    ECS_SYSTEM(world, PromHttpReplyTableEntityMemoryUsed,      EcsManual, [in] EcsTableStats);
-    ECS_SYSTEM(world, PromHttpReplyTableEntityMemoryAllocd,    EcsManual, [in] EcsTableStats);    
-    ECS_SYSTEM(world, PromHttpReplyTableOtherMemory,           EcsManual, [in] EcsTableStats);
+    ECS_SYSTEM(world, PromHttpReplyTableColumnCount,           EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTableEntityCount,           EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTableSystemMatchedCount,    EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTableComponentMemoryUsed,   EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTableComponentMemoryAllocd, EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTableEntityMemoryUsed,      EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTableEntityMemoryAllocd,    EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);    
+    ECS_SYSTEM(world, PromHttpReplyTableOtherMemory,           EcsManual, [in] EcsTableStats, SYSTEM.EcsHidden);
 
     /* -- Type metrics -- */
 
-    ECS_SYSTEM(world, PromHttpReplyTypeEntityCount,           EcsManual, [in] EcsTypeStats);
-    ECS_SYSTEM(world, PromHttpReplyTypeEnabledSystemCount,    EcsManual, [in] EcsTypeStats);
-    ECS_SYSTEM(world, PromHttpReplyTypeActiveSystemCount,     EcsManual, [in] EcsTypeStats);
+    ECS_SYSTEM(world, PromHttpReplyTypeEntityCount,           EcsManual, [in] EcsTypeStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTypeEnabledSystemCount,    EcsManual, [in] EcsTypeStats, SYSTEM.EcsHidden);
+    ECS_SYSTEM(world, PromHttpReplyTypeActiveSystemCount,     EcsManual, [in] EcsTypeStats, SYSTEM.EcsHidden);
 
     /* -- Construct HTTP reply for Prometheus scrape -- */
 
@@ -959,7 +960,9 @@ void PrometheusHttpImport(
         
         .PromHttpReplyTypeEntityCount,
         .PromHttpReplyTypeEnabledSystemCount,
-        .PromHttpReplyTypeActiveSystemCount);
+        .PromHttpReplyTypeActiveSystemCount,
+        
+        SYSTEM.EcsHidden);
 
     ECS_EXPORT_ENTITY(PromHttpReply);
 }
