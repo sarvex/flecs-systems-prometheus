@@ -16,6 +16,7 @@ typedef struct FlecsSystemsPrometheus {
     ECS_DECLARE_COMPONENT(EcsPrometheus);
 } FlecsSystemsPrometheus;
 
+FLECS_SYSTEMS_PROMETHEUS_EXPORT
 void FlecsSystemsPrometheusImport(
     ecs_world_t *world,
     int flags);
